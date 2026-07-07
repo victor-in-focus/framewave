@@ -1,0 +1,59 @@
+@font-face {
+  font-family: "Geist Sans";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/Geist-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+}
+
+:root {
+  color: #0c1a12;
+  background: #ebe9e1;
+  font-family:
+    "Geist Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --background: #ebe9e1;
+  --foreground: #0c1a12;
+  --muted: #f2f0e9;
+  --muted-strong: #dfe6df;
+  --soft-foreground: #4c5f53;
+  --panel: #0a1611;
+  --panel-2: #0f2018;
+  --panel-foreground: #f9f8f3;
+  --panel-muted: #8ca697;
+  --highlight: #f3f9d2;
+  --highlight-foreground: #3d4a2a;
+  --accent: #d9a13c;
+  --accent-foreground: #3c2c10;
+  --border: rgba(10, 22, 17, 0.11);
+  --panel-border: rgba(249, 248, 243, 0.12);
+  --shadow: 0 10px 15px -3px rgba(10, 22, 17, 0.05),
+    0 4px 6px -2px rgba(10, 22, 17, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--background);
+  font-feature-settings: "cv02", "cv03", "cv04", "tnum";
+  letter-spacing: 0;
+}
+
+button,
+input {
+  font: inherit;
+}

@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1200, initial-scale=1" />
+    <title>FrameWave OG Card</title>
+    <style>
+      @font-face {
+        font-family: "Geist Sans";
+        font-style: normal;
+        font-weight: 100 900;
+        src: url("../public/fonts/Geist-Variable.woff2") format("woff2");
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      body {
+        color: #0c1a12;
+        background: #ebe9e1;
+        font-family:
+          "Geist Sans", ui-sans-serif, system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-synthesis: none;
+        letter-spacing: 0;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .card {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        padding: 58px 66px;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            circle at 86% 16%,
+            rgba(217, 161, 60, 0.22),
+            transparent 26%
+          ),
+          linear-gradient(135deg, #ebe9e1 0%, #f6f2e7 43%, #dfe6df 100%);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 34px;
+        font-weight: 760;
+      }
+
+      .mark {
+        display: grid;
+        width: 62px;
+        height: 62px;
+        place-items: center;
+        border-radius: 16px;
+        color: #f3f9d2;
+        background: #0a1611;
+        box-shadow: 0 16px 42px rgba(10, 22, 17, 0.22);
+        font-size: 19px;
+        font-weight: 800;
+      }
+
+      h1 {
+        max-width: 650px;
+        margin: 70px 0 0;
+        font-size: 70px;
+        font-weight: 790;
+        line-height: 0.95;
+      }
+
+      .subline {
+        max-width: 610px;
+        margin: 28px 0 0;
+        color: #4c5f53;
+        font-size: 28px;
+        line-height: 1.26;
+      }
+
+      .chips {
+        display: flex;
+        gap: 14px;
+        margin-top: 42px;
+      }
+
+      .chip {
+        border: 1px solid rgba(10, 22, 17, 0.18);
+        border-radius: 999px;
+        padding: 12px 18px;
+        color: #324338;
+        background: rgba(249, 248, 243, 0.54);
+        font-size: 19px;
+      }
+
+      .video-panel {
+        position: absolute;
+        top: 128px;
+        right: 66px;
+        width: 390px;
+        height: 304px;
+        overflow: hidden;
+        border: 1px solid rgba(249, 248, 243, 0.13);
+        border-radius: 8px;
+        background: #020403;
+        box-shadow: 0 32px 70px rgba(10, 22, 17, 0.38);
+      }
+
+      .video-panel::before {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background:
+          linear-gradient(rgba(249, 248, 243, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(249, 248, 243, 0.035) 1px, transparent 1px);
+        background-size: 28px 28px;
+        opacity: 0.55;
+      }
+
+      .playhead {
+        position: absolute;
+        top: 36px;
+        bottom: 36px;
+        left: 54%;
+        width: 3px;
+        background: #d9a13c;
+        box-shadow: 0 0 18px rgba(217, 161, 60, 0.68);
+      }
+
+      .waveform {
+        position: absolute;
+        right: 34px;
+        bottom: 64px;
+        left: 34px;
+        display: flex;
+        height: 78px;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .bar {
+        width: 9px;
+        border-radius: 999px;
+        background: #f3f9d2;
+        opacity: 0.9;
+      }
+
+      .bar:nth-child(3n) {
+        background: #d9a13c;
+      }
+
+      .bar:nth-child(1) {
+        height: 18px;
+      }
+
+      .bar:nth-child(2) {
+        height: 42px;
+      }
+
+      .bar:nth-child(3) {
+        height: 62px;
+      }
+
+      .bar:nth-child(4) {
+        height: 35px;
+      }
+
+      .bar:nth-child(5) {
+        height: 70px;
+      }
+
+      .bar:nth-child(6) {
+        height: 24px;
+      }
+
+      .bar:nth-child(7) {
+        height: 52px;
+      }
+
+      .bar:nth-child(8) {
+        height: 74px;
+      }
+
+      .bar:nth-child(9) {
+        height: 28px;
+      }
+
+      .bar:nth-child(10) {
+        height: 58px;
+      }
+
+      .bar:nth-child(11) {
+        height: 38px;
+      }
+
+      .bar:nth-child(12) {
+        height: 68px;
+      }
+
+      .bar:nth-child(13) {
+        height: 21px;
+      }
+
+      .bar:nth-child(14) {
+        height: 50px;
+      }
+
+      .bar:nth-child(15) {
+        height: 73px;
+      }
+
+      .bar:nth-child(16) {
+        height: 30px;
+      }
+
+      .bar:nth-child(17) {
+        height: 60px;
+      }
+
+      .bar:nth-child(18) {
+        height: 44px;
+      }
+
+      .output-pill {
+        position: absolute;
+        top: 462px;
+        right: 66px;
+        display: flex;
+        width: 390px;
+        height: 64px;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        border-radius: 999px;
+        color: #f9f8f3;
+        background: #0a1611;
+        font-size: 23px;
+        font-weight: 700;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #d9a13c;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card" aria-label="FrameWave social preview">
+      <div class="brand">
+        <div class="mark">FW</div>
+        <div>FrameWave</div>
+      </div>
+
+      <h1>Voice references<br />for AI video tools.</h1>
+      <p class="subline">
+        Turn any audio or video clip into a black-screen MP4 reference. Free,
+        private, in your browser.
+      </p>
+
+      <div class="chips" aria-label="FrameWave workflow">
+        <span class="chip">Trim</span>
+        <span class="chip">Export MP4</span>
+        <span class="chip">Nothing uploaded</span>
+      </div>
+
+      <section class="video-panel" aria-hidden="true">
+        <div class="playhead"></div>
+        <div class="waveform">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </section>
+
+      <div class="output-pill">
+        <span>Audio in</span>
+        <span class="dot"></span>
+        <span>black MP4 out</span>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const appSource = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+
+function referenceRowSource(): string {
+  const start = appSource.indexOf('className="library-title-row"');
+  const end = appSource.indexOf("</article>", start);
+
+  return appSource.slice(start, end);
+}
+
+describe("library row markup", () => {
+  it("places tags below the title and playback below the tags", () => {
+    const rowSource = referenceRowSource();
+    const titleIndex = rowSource.indexOf('className="library-title-row"');
+    const tagsIndex = rowSource.indexOf('className="library-tags"');
+    const playerIndex = rowSource.indexOf('className="library-row-meta"');
+
+    expect(titleIndex).toBeGreaterThanOrEqual(0);
+    expect(tagsIndex).toBeGreaterThan(titleIndex);
+    expect(playerIndex).toBeGreaterThan(tagsIndex);
+  });
+
+  it("shows the filename directly below the library title", () => {
+    const rowSource = referenceRowSource();
+    const titleIndex = rowSource.indexOf("<strong>{displayTitle}</strong>");
+    const filenameIndex = rowSource.indexOf(
+      '<p className="library-filename">'
+    );
+    const tagsIndex = rowSource.indexOf('className="library-tags"');
+
+    expect(filenameIndex).toBeGreaterThan(titleIndex);
+    expect(filenameIndex).toBeLessThan(tagsIndex);
+  });
+
+  it("does not render a standalone duration label before the library player", () => {
+    expect(referenceRowSource()).not.toContain("formatDuration(clip.duration)");
+  });
+
+  it("renders top-right card action icons in reference rows", () => {
+    const rowSource = referenceRowSource();
+
+    expect(rowSource).toContain('className="library-actions"');
+    expect(rowSource).toContain("<Star");
+    expect(rowSource).toContain("<Download");
+    expect(rowSource).toContain("<Tags");
+    expect(rowSource).toContain("<Trash2");
+  });
+});

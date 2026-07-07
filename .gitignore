@@ -1,0 +1,13 @@
+node_modules/
+dist/
+library/
+.DS_Store
+*.log
+
+# Internal / non-app content — never publish
+.agents/
+.superpowers/
+docs/
+scripts/
+tests/
+skills-lock.json
