@@ -14,6 +14,8 @@ export interface LibraryClip {
   favorite: boolean;
   createdAt: string;
   updatedAt: string;
+  projectId: string | null;
+  folderId: string | null;
   tags: string[];
   mediaUrl: string;
   downloadUrl: string;
@@ -76,9 +78,13 @@ interface StoredLibraryClip
 
 const DB_NAME = "FrameWaveLibraryDB";
 const LEGACY_DB_NAME = ["Voice", "Blank", "LibraryDB"].join("");
-const DB_VERSION = 3;
-const STORE_NAME = "clips";
-const SESSION_STORE_NAME = "session";
+const DB_VERSION = 4;
+export const LIBRARY_CLIP_STORE = "clips";
+export const PROJECT_STORE_NAME = "projects";
+export const PROJECT_FOLDER_STORE_NAME = "project-folders";
+export const LIBRARY_META_STORE_NAME = "library-meta";
+export const SESSION_STORE_NAME = "session";
+const STORE_NAME = LIBRARY_CLIP_STORE;
 const THUMBNAIL_MAX_SIZE = 768;
 const THUMBNAIL_QUALITY = 0.84;
 
@@ -167,6 +173,21 @@ function openLibraryDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(SESSION_STORE_NAME)) {
         db.createObjectStore(SESSION_STORE_NAME, { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains(PROJECT_STORE_NAME)) {
+        const store = db.createObjectStore(PROJECT_STORE_NAME, { keyPath: "id" });
+        store.createIndex("name", "name");
+        store.createIndex("createdAt", "createdAt");
+      }
+      if (!db.objectStoreNames.contains(PROJECT_FOLDER_STORE_NAME)) {
+        const store = db.createObjectStore(PROJECT_FOLDER_STORE_NAME, {
+          keyPath: "id"
+        });
+        store.createIndex("projectId", "projectId");
+        store.createIndex("createdAt", "createdAt");
+      }
+      if (!db.objectStoreNames.contains(LIBRARY_META_STORE_NAME)) {
+        db.createObjectStore(LIBRARY_META_STORE_NAME, { keyPath: "id" });
       }
     };
 
@@ -306,14 +327,35 @@ export async function withDatabaseStore<T>(
   mode: IDBTransactionMode,
   action: (store: IDBObjectStore) => Promise<T> | T
 ): Promise<T> {
+  return withDatabaseStores([storeName], mode, (stores) =>
+    action(stores[storeName])
+  );
+}
+
+export async function withDatabaseStores<T>(
+  storeNames: string[],
+  mode: IDBTransactionMode,
+  action: (stores: Record<string, IDBObjectStore>) => Promise<T> | T
+): Promise<T> {
   const db = await openLibraryDb();
-  const transaction = db.transaction(storeName, mode);
-  const store = transaction.objectStore(storeName);
+  const transaction = db.transaction(storeNames, mode);
+  const done = transactionDone(transaction);
+  const stores = Object.fromEntries(
+    storeNames.map((storeName) => [storeName, transaction.objectStore(storeName)])
+  ) as Record<string, IDBObjectStore>;
 
   try {
-    const result = await action(store);
-    await transactionDone(transaction);
+    const result = await action(stores);
+    await done;
     return result;
+  } catch (error) {
+    try {
+      transaction.abort();
+    } catch {
+      // The transaction may already have failed or completed.
+    }
+    await done.catch(() => undefined);
+    throw error;
   } finally {
     db.close();
   }
@@ -399,6 +441,8 @@ function toLibraryClip(record: StoredLibraryClip): LibraryClip {
     favorite: record.favorite,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
+    projectId: record.projectId ?? null,
+    folderId: record.folderId ?? null,
     tags: record.tags,
     mediaUrl: url,
     downloadUrl: url,
@@ -529,6 +573,8 @@ export async function saveLibraryClip(
     favorite: input.favorite ?? false,
     createdAt: now,
     updatedAt: now,
+    projectId: null,
+    folderId: null,
     tags: normalizeTags(input.tags),
     thumbnailBlob: input.thumbnailBlob ?? null,
     thumbnailName: input.thumbnailName,
