@@ -14,6 +14,22 @@ By default, every newly saved reference lands in `Quick exports`, a global unfil
 
 This rule applies even when the user is currently viewing a project or folder. The active sidebar selection never becomes an implicit export destination. A reference moves out of `Quick exports` only when the user deliberately uses `Organize`, `Move to...`, or another explicit organizing action.
 
+## Visual Direction
+
+The approved workspace layout, information hierarchy, and feature behavior remain unchanged. The supplied video-editor reference influences only the visual treatment; FrameWave should not inherit its editing timeline, effects browser, control density, or additional tools.
+
+The workspace should feel like a focused professional media tool:
+
+- Use a deep black application background with graphite workspace surfaces.
+- Separate regions with fine borders and dividers instead of floating cards or heavy shadows.
+- Keep controls compact, crisp, and clearly labeled, using familiar icons where appropriate.
+- Use high-contrast primary text, muted secondary text, and one restrained FrameWave accent color for active states and primary actions.
+- Prefer calm, efficient spacing over decorative whitespace while preserving comfortable touch targets and readable text.
+- Keep the export workflow visually dominant. Projects, folders, and library organization remain supporting tools.
+- Carry the same visual language through the expanded sidebar, collapsed rail, mobile drawer, dialogs, move picker, empty states, and library rows.
+
+This is a visual reskin of the approved FrameWave workspace, not a new layout or a broader editing interface. Existing feature boundaries and interaction decisions in this document take precedence over similarities to the visual reference.
+
 ## Information Architecture
 
 The navigation model has four levels:
