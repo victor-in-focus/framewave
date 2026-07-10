@@ -223,7 +223,7 @@
   overflow-wrap: anywhere;
   color: var(--panel-foreground);
   font-size: 1rem;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -321,7 +321,7 @@
 .section-line strong {
   color: var(--foreground);
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .field-label {
@@ -574,7 +574,7 @@
   padding: 0;
   font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
   font-size: 0.8125rem;
-  font-weight: 800;
+  font-weight: 700;
   box-shadow: 0 3px 10px rgba(8, 9, 16, 0.16);
 }
 
@@ -632,7 +632,7 @@
   color: var(--panel-foreground);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
-  font-weight: 550;
+  font-weight: 600;
 }
 
 .action-row {
@@ -760,7 +760,7 @@ button:disabled {
   color: var(--panel-foreground);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
-  font-weight: 550;
+  font-weight: 600;
 }
 
 .download-button {
@@ -884,8 +884,8 @@ button:disabled {
   min-height: 14px;
   border-radius: 4px;
   padding: 1px 4px 0;
-  font-size: 0.5625rem;
-  font-weight: 800;
+  font-size: 0.625rem;
+  font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -988,7 +988,7 @@ button:disabled {
 .library-section-heading strong {
   color: var(--foreground);
   font-size: 1rem;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .library-section-heading span {
@@ -1142,7 +1142,7 @@ button:disabled {
   padding: 0 14px;
   cursor: pointer;
   font-size: 0.8125rem;
-  font-weight: 750;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -1213,7 +1213,7 @@ button:disabled {
   color: var(--foreground);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .library-thumbnail img {
@@ -1351,7 +1351,7 @@ button:disabled {
 .library-title-row strong {
   overflow-wrap: anywhere;
   color: var(--foreground);
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   font-weight: 700;
 }
 
@@ -1542,7 +1542,7 @@ button:disabled {
 .progress-panel.is-done > span::before {
   content: "✓ ";
   color: var(--highlight-foreground);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .work-row-light .filename-preview {
@@ -1798,10 +1798,6 @@ button:disabled {
 .landing-headline {
   margin: 0;
   color: var(--panel-foreground);
-  font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
-  font-size: clamp(1.7rem, 3.4vw, 2.35rem);
-  font-weight: 500;
-  letter-spacing: -0.015em;
   line-height: 1.12;
   text-wrap: balance;
 }
@@ -1950,7 +1946,7 @@ input:focus-visible {
 .library-group-heading strong {
   color: var(--foreground);
   font-size: 0.875rem;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .library-group-heading span {
@@ -1992,7 +1988,7 @@ input:focus-visible {
 .resume-copy span {
   color: var(--panel-muted);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.71875rem;
+  font-size: 0.6875rem;
 }
 
 .resume-actions {
@@ -2037,7 +2033,7 @@ input:focus-visible {
 .project-sidebar-header strong {
   overflow: hidden;
   font-size: 0.875rem;
-  font-weight: 720;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -3004,20 +3000,22 @@ button:not(:disabled):active,
 .project-navigation-heading {
   color: var(--soft-foreground);
   font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 550;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .project-sidebar-header strong,
 .project-dialog-header strong,
 .projects-drawer > header strong {
   font-size: 0.9375rem;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .library-section-heading strong {
   font-size: 1rem;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .library-group-heading strong {
@@ -3041,8 +3039,10 @@ button:not(:disabled):active,
 .library-card .field-label span {
   color: var(--panel-muted);
   font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 550;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .section-line {
@@ -3071,13 +3071,13 @@ button:not(:disabled):active,
 
 button,
 .download-button {
-  font-weight: 550;
+  font-weight: 600;
 }
 
 .primary-button,
 .download-button,
 .import-button {
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .library-title-row strong {
@@ -3092,5 +3092,5 @@ button,
 
 .tag-chip {
   font-size: 0.625rem;
-  font-weight: 650;
+  font-weight: 700;
 }

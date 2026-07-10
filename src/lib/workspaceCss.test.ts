@@ -76,10 +76,25 @@ describe("professional workspace visual contract", () => {
     const groupMetadata = lastCssRule(appCss, ".library-group-heading span");
 
     expect(navigationHeading).toContain('font-family: "Geist Sans"');
-    expect(navigationHeading).toContain("font-size: 0.75rem");
-    expect(navigationHeading).toContain("font-weight: 550");
+    expect(navigationHeading).toContain("font-size: 0.6875rem");
+    expect(navigationHeading).toContain("text-transform: uppercase");
     expect(sectionHeading).toContain("font-size: 1rem");
-    expect(sectionHeading).toContain("font-weight: 650");
+    expect(sectionHeading).toContain("font-weight: 700");
     expect(groupMetadata).toContain('font-family: "Geist Mono"');
+  });
+
+  it("holds the four-weight type contract: 250 display, 500 body, 600 labels, 700 strong", () => {
+    const weights = new Set(
+      Array.from(appCss.matchAll(/font-weight: (\d+)/g), (m) => m[1])
+    );
+
+    expect([...weights].sort()).toEqual(["250", "500", "600", "700"]);
+  });
+
+  it("keeps micro-labels tracked and uppercase", () => {
+    const microLabels = lastCssRule(appCss, ".library-card .field-label span");
+
+    expect(microLabels).toContain("letter-spacing: 0.06em");
+    expect(microLabels).toContain("text-transform: uppercase");
   });
 });
