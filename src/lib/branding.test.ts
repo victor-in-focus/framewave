@@ -15,6 +15,10 @@ const textExtensions = new Set([
 ]);
 const oldPascalName = ["Voice", "Blank"].join("");
 const oldPackageName = ["voice", "blank"].join("");
+const formerCreatorName = ["Victor", "Banya"].join(" ");
+const unwantedAssistantName = ["Clau", "de"].join("");
+const unwantedVendorName = ["Anth", "ropic"].join("");
+const extensionlessTextFiles = new Set([".gitignore", "LICENSE"]);
 
 function projectFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
@@ -30,7 +34,10 @@ function projectFiles(directory: string): string[] {
     if (!stats.isFile()) {
       return [];
     }
-    if (![...textExtensions].some((extension) => path.endsWith(extension))) {
+    if (
+      !extensionlessTextFiles.has(entry) &&
+      ![...textExtensions].some((extension) => path.endsWith(extension))
+    ) {
       return [];
     }
 
@@ -54,6 +61,30 @@ describe("FrameWave branding", () => {
     );
     expect(readFileSync(join(repoRoot, "package.json"), "utf8")).toContain(
       '"name": "framewave"'
+    );
+  });
+
+  it("credits VictorInFocus without obsolete contributor attribution", () => {
+    const filesWithObsoleteAttribution = projectFiles(repoRoot)
+      .filter((path) => {
+        const text = readFileSync(path, "utf8");
+        return (
+          text.includes(formerCreatorName) ||
+          text.toLowerCase().includes(unwantedAssistantName.toLowerCase()) ||
+          text.toLowerCase().includes(unwantedVendorName.toLowerCase())
+        );
+      })
+      .map((path) => relative(repoRoot, path));
+
+    expect(filesWithObsoleteAttribution).toEqual([]);
+    expect(readFileSync(join(repoRoot, "src/lib/brand.ts"), "utf8")).toContain(
+      "VictorInFocus"
+    );
+    expect(readFileSync(join(repoRoot, "README.md"), "utf8")).toContain(
+      "VictorInFocus"
+    );
+    expect(readFileSync(join(repoRoot, "LICENSE"), "utf8")).toContain(
+      "VictorInFocus"
     );
   });
 });

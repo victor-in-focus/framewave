@@ -49,10 +49,18 @@ describe("App first render (no source loaded)", () => {
   it("keeps reference controls minimal on first render", () => {
     const html = renderToString(<App />);
 
-    expect(html).toContain("Search references...");
+    expect(html).toContain("Search names, filenames, or tags");
     expect(html).toContain("Add Existing Clip");
     expect(html).toContain("Export All");
+    expect(html).toContain("Add an existing reference MP4");
+    expect(html).toContain("Download saved references as a ZIP");
     expect(html).toContain("Latest");
     expect(html).toContain("Starred");
+  });
+
+  it("credits the creator consistently", () => {
+    const html = renderToString(<App />);
+
+    expect(html).toContain("VictorInFocus");
   });
 });

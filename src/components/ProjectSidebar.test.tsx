@@ -105,12 +105,22 @@ describe("ProjectSidebar", () => {
     const user = userEvent.setup();
     const { onCollapsedChange } = renderSidebar();
 
-    const collapse = screen.getByRole("button", { name: "Collapse projects" });
-    expect(collapse.getAttribute("title")).toBe("Collapse projects");
+    const collapse = screen.getByRole("button", {
+      name: "Collapse project sidebar"
+    });
+    expect(collapse.getAttribute("title")).toBe("Collapse project sidebar");
     await user.click(collapse);
 
     expect(onCollapsedChange).toHaveBeenCalledWith(true);
     expect(localStorage.getItem("framewave:projectSidebarCollapsed")).toBe("true");
+  });
+
+  it("uses action-oriented project tooltips", () => {
+    renderSidebar();
+
+    expect(
+      screen.getByRole("button", { name: "Create a project" }).getAttribute("title")
+    ).toBe("Create a project");
   });
 
   it("opens a mobile drawer, manages focus, and closes on Escape", async () => {

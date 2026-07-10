@@ -116,6 +116,7 @@ export function ProjectEditorDialog({
             data-autofocus
             aria-label="Project name"
             aria-describedby={error ? errorId : undefined}
+            placeholder="e.g. Midnight Train"
             value={name}
             maxLength={80}
             onChange={(event) => {
@@ -207,6 +208,7 @@ export function FolderEditorDialog({
             data-autofocus
             aria-label="Folder name"
             aria-describedby={error ? errorId : undefined}
+            placeholder="e.g. Pickups"
             value={name}
             maxLength={80}
             onChange={(event) => {
@@ -364,6 +366,7 @@ export function MoveReferenceDialog({
             <input
               data-autofocus
               aria-label="New project name"
+              placeholder="e.g. Midnight Train"
               value={projectName}
               maxLength={80}
               onChange={(event) => {
@@ -413,6 +416,7 @@ export function MoveReferenceDialog({
             <input
               data-autofocus
               aria-label="New folder name"
+              placeholder="e.g. Pickups"
               value={folderName}
               maxLength={80}
               onChange={(event) => {

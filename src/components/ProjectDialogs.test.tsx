@@ -49,6 +49,9 @@ describe("project editor dialogs", () => {
         name: "Use starter folders"
       }) as HTMLInputElement).checked
     ).toBe(false);
+    expect(screen.getByLabelText("Project name").getAttribute("placeholder")).toBe(
+      "e.g. Midnight Train"
+    );
     await user.click(screen.getByRole("button", { name: "Create project" }));
     expect(screen.getByText("Enter a name.")).toBeTruthy();
     expect(screen.getByRole("dialog", { name: "New project" })).toBeTruthy();
@@ -75,6 +78,9 @@ describe("project editor dialogs", () => {
       />
     );
 
+    expect(screen.getByLabelText("Folder name").getAttribute("placeholder")).toBe(
+      "e.g. Pickups"
+    );
     await user.type(screen.getByLabelText("Folder name"), " finals ");
     await user.click(screen.getByRole("button", { name: "Create folder" }));
     expect(screen.getByText("That name is already in use.")).toBeTruthy();
@@ -125,6 +131,9 @@ describe("MoveReferenceDialog", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "New project" }));
+    expect(
+      screen.getByLabelText("New project name").getAttribute("placeholder")
+    ).toBe("e.g. Midnight Train");
     await user.type(screen.getByLabelText("New project name"), "Campaign");
     await user.click(screen.getByRole("checkbox", { name: "Use starter folders" }));
     await user.click(screen.getByRole("button", { name: "Create project and move" }));
@@ -151,6 +160,9 @@ describe("MoveReferenceDialog", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "New folder" }));
+    expect(
+      screen.getByLabelText("New folder name").getAttribute("placeholder")
+    ).toBe("e.g. Pickups");
     await user.type(screen.getByLabelText("New folder name"), "Scene 02");
     await user.click(screen.getByRole("button", { name: "Create folder and move" }));
     expect(onCreateFolder).toHaveBeenCalledWith("p1", "Scene 02");

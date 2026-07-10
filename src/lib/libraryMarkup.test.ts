@@ -4,7 +4,8 @@ import { describe, expect, it } from "vitest";
 const appSource = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
 
 function referenceRowSource(): string {
-  const start = appSource.indexOf('className="library-title-row"');
+  const libraryStart = appSource.indexOf('className="library-list"');
+  const start = appSource.indexOf("<article", libraryStart);
   const end = appSource.indexOf("</article>", start);
 
   return appSource.slice(start, end);
@@ -48,5 +49,20 @@ describe("library row markup", () => {
     expect(rowSource).toContain("<FolderInput");
     expect(rowSource).toContain('aria-label={`Move reference: ${displayTitle}`}');
     expect(rowSource).toContain("<Trash2");
+  });
+
+  it("provides action-oriented tooltips for icon controls", () => {
+    const rowSource = referenceRowSource();
+
+    expect(rowSource).toContain("Replace thumbnail for");
+    expect(rowSource).toContain("Remove thumbnail from");
+    expect(rowSource).toContain("Remove from Starred");
+    expect(rowSource).toContain("Add to Starred");
+    expect(rowSource).toContain('title="Download reference MP4"');
+    expect(rowSource).toContain('title="Edit tags"');
+    expect(rowSource).toContain('title="Move to project or folder"');
+    expect(rowSource).toContain('title="Delete reference"');
+    expect(rowSource).toContain("Pause voice reference");
+    expect(rowSource).toContain("Play voice reference");
   });
 });

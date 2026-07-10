@@ -136,8 +136,8 @@ export function ProjectSidebar({
           <span>Projects</span>
           <button
             type="button"
-            title="New project"
-            aria-label="New project"
+            title="Create a project"
+            aria-label="Create a project"
             onClick={onCreateProject}
           >
             <Plus size={16} aria-hidden="true" />
@@ -314,8 +314,12 @@ export function ProjectSidebar({
           <strong>FrameWave</strong>
           <button
             type="button"
-            title={collapsed ? "Expand projects" : "Collapse projects"}
-            aria-label={collapsed ? "Expand projects" : "Collapse projects"}
+            title={
+              collapsed ? "Expand project sidebar" : "Collapse project sidebar"
+            }
+            aria-label={
+              collapsed ? "Expand project sidebar" : "Collapse project sidebar"
+            }
             onClick={toggleCollapsed}
           >
             {collapsed ? (

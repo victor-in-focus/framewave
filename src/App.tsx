@@ -32,6 +32,12 @@ import {
 } from "./components/ProjectDialogs";
 import { ProjectSidebar } from "./components/ProjectSidebar";
 import { trackEvent } from "./lib/analytics";
+import {
+  CREATOR_NAME,
+  CREATOR_X_URL,
+  FEEDBACK_MAILTO,
+  PROJECT_REPO_URL
+} from "./lib/brand";
 import { createBlankVoiceReference } from "./lib/processing";
 import {
   formatFileSize,
@@ -129,12 +135,6 @@ const ACCEPTED_SOURCE_TYPES =
 const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif";
 const NAMING_CONTEXT_KEY = "namingContext";
 const PROJECT_SIDEBAR_KEY = "projectSidebarCollapsed";
-
-// Creator links - update the handle/repo when they change.
-const CREATOR_X_URL = "https://x.com/VictorInFocus";
-const PROJECT_REPO_URL = "https://github.com/victor-in-focus/framewave";
-const FEEDBACK_MAILTO =
-  "mailto:victorbanya@gmail.com?subject=FrameWave%20request&body=I%20want%20voice%20isolation%20%2F%20audio%20cleanup%20in%20FrameWave%20because%3A%20";
 
 interface NamingContext {
   character?: string;
@@ -1693,6 +1693,7 @@ export default function App() {
                             <button
                               className="trim-handle trim-handle-start"
                               type="button"
+                              title="Set voice start"
                               aria-label="Adjust trim start"
                               onPointerDown={(event) =>
                                 handleTrimPointerDown("start", event)
@@ -1704,6 +1705,7 @@ export default function App() {
                             <button
                               className="trim-handle trim-handle-end"
                               type="button"
+                              title="Set voice end"
                               aria-label="Adjust trim end"
                               onPointerDown={(event) =>
                                 handleTrimPointerDown("end", event)
@@ -1724,6 +1726,11 @@ export default function App() {
                         disabled={!sourceFile || !rangeValidation.valid}
                         type="button"
                         onClick={playSelectedRange}
+                        title={
+                          isRangePlaying
+                            ? "Stop voice preview"
+                            : "Preview selected voice"
+                        }
                         aria-label={
                           isRangePlaying
                             ? "Stop selected range"
@@ -1763,7 +1770,7 @@ export default function App() {
                   <label className="field-label">
                     <span>Character name</span>
                     <input
-                      placeholder="e.g. Emily"
+                      placeholder="e.g. Mara Quinn"
                       type="text"
                       value={characterName}
                       onChange={(event) => setCharacterName(event.target.value)}
@@ -1772,7 +1779,7 @@ export default function App() {
                   <label className="field-label">
                     <span>Take or descriptor</span>
                     <input
-                      placeholder="e.g. calm take"
+                      placeholder="e.g. Scene 04 pickup"
                       type="text"
                       value={descriptor}
                       onChange={(event) => setDescriptor(event.target.value)}
@@ -1783,7 +1790,7 @@ export default function App() {
                 <label className="field-label">
                   <span>Tags</span>
                   <input
-                    placeholder="e.g. lead, interview"
+                    placeholder="e.g. character-a, final, close-up"
                     type="text"
                     value={tagInput}
                     onChange={(event) => setTagInput(event.target.value)}
@@ -2021,7 +2028,7 @@ export default function App() {
                 <div className="library-search-box">
                   <Search size={15} strokeWidth={1.8} aria-hidden="true" />
                   <input
-                    placeholder="Search references..."
+                    placeholder="Search names, filenames, or tags"
                     type="search"
                     value={libraryQuery}
                     onChange={(event) => setLibraryQuery(event.target.value)}
@@ -2032,6 +2039,7 @@ export default function App() {
                 <button
                   className="library-import-toggle"
                   type="button"
+                  title="Add an existing reference MP4"
                   onClick={() => setShowImportPanel((current) => !current)}
                   aria-expanded={showImportPanel}
                 >
@@ -2041,6 +2049,7 @@ export default function App() {
                 <button
                   className="library-import-toggle"
                   type="button"
+                  title="Download saved references as a ZIP"
                   disabled={libraryClips.length === 0}
                   onClick={handleLibraryArchiveExport}
                 >
@@ -2072,7 +2081,7 @@ export default function App() {
                 <label className="field-label">
                   <span>Import tags</span>
                   <input
-                    placeholder="archive, imported"
+                    placeholder="e.g. imported, archive"
                     value={importTags}
                     onChange={(event) => setImportTags(event.target.value)}
                   />
@@ -2127,6 +2136,7 @@ export default function App() {
                 const showDescriptorChip =
                   Boolean(descriptor) &&
                   !displayTitle.toLowerCase().includes(descriptor.toLowerCase());
+                const visibleTags = limitedTags(clip.tags);
                 const currentPlaybackTime = libraryPlaybackTimes[clip.id] ?? 0;
                 const playbackProgress =
                   clip.duration > 0
@@ -2153,6 +2163,11 @@ export default function App() {
                       <label
                         className="thumbnail-action"
                         aria-label={`Add thumbnail for ${displayTitle}`}
+                        title={
+                          clip.thumbnailUrl
+                            ? `Replace thumbnail for ${displayTitle}`
+                            : `Add thumbnail for ${displayTitle}`
+                        }
                       >
                         <ImagePlus size={14} strokeWidth={2} aria-hidden="true" />
                         <input
@@ -2165,6 +2180,7 @@ export default function App() {
                         <button
                           className="thumbnail-action"
                           type="button"
+                          title={`Remove thumbnail from ${displayTitle}`}
                           onClick={() => removeClipThumbnail(clip)}
                           aria-label={`Remove thumbnail for ${displayTitle}`}
                         >
@@ -2191,6 +2207,9 @@ export default function App() {
                           }`}
                           type="button"
                           onClick={() => toggleFavorite(clip)}
+                          title={
+                            clip.favorite ? "Remove from Starred" : "Add to Starred"
+                          }
                           aria-label={
                             clip.favorite
                               ? `Remove ${displayTitle} from starred`
@@ -2208,6 +2227,7 @@ export default function App() {
                           className="library-icon-action"
                           href={clip.downloadUrl}
                           download={clip.filename}
+                          title="Download reference MP4"
                           aria-label={`Download ${displayTitle}`}
                         >
                           <Download
@@ -2221,6 +2241,7 @@ export default function App() {
                             editingClipId === clip.id ? " is-active" : ""
                           }`}
                           type="button"
+                          title="Edit tags"
                           onClick={() =>
                             setEditingClipId((current) =>
                               current === clip.id ? null : clip.id
@@ -2233,7 +2254,7 @@ export default function App() {
                         <button
                           className="library-icon-action"
                           type="button"
-                          title="Move reference"
+                          title="Move to project or folder"
                           onClick={() => setMoveClipId(clip.id)}
                           aria-label={`Move reference: ${displayTitle}`}
                         >
@@ -2246,6 +2267,7 @@ export default function App() {
                         <button
                           className="library-icon-action"
                           type="button"
+                          title="Delete reference"
                           onClick={() => removeLibraryClip(clip)}
                           aria-label={`Delete ${displayTitle}`}
                         >
@@ -2259,14 +2281,14 @@ export default function App() {
                           {descriptor}
                         </span>
                       ) : null}
-                      {limitedTags(clip.tags).visible.map((tag) => (
+                      {visibleTags.visible.map((tag) => (
                         <span className="tag-chip tag-chip-accent" key={tag}>
                           {tag}
                         </span>
                       ))}
-                      {limitedTags(clip.tags).hiddenCount > 0 ? (
+                      {visibleTags.hiddenCount > 0 ? (
                         <span className="tag-chip tag-chip-muted">
-                          +{limitedTags(clip.tags).hiddenCount}
+                          +{visibleTags.hiddenCount}
                         </span>
                       ) : null}
                     </div>
@@ -2276,6 +2298,11 @@ export default function App() {
                           className="library-player-button"
                           type="button"
                           onClick={() => toggleLibraryPlayback(clip.id)}
+                          title={
+                            isClipPlaying
+                              ? "Pause voice reference"
+                              : "Play voice reference"
+                          }
                           aria-label={
                             isClipPlaying
                               ? `Pause ${displayTitle}`
@@ -2335,7 +2362,7 @@ export default function App() {
                               [clip.id]: event.target.value
                             }))
                           }
-                          placeholder="Tags"
+                          placeholder="Add tags, separated by commas"
                           aria-label={`Tags for ${displayTitle}`}
                         />
                         <button
@@ -2423,7 +2450,7 @@ export default function App() {
         <span>
           Built by{" "}
           <a href={CREATOR_X_URL} target="_blank" rel="noreferrer">
-            VictorInFocus
+            {CREATOR_NAME}
           </a>{" "}
           - AI video tools &amp; cinematic AI film.
         </span>
