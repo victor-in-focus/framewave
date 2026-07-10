@@ -2778,3 +2778,301 @@ button:not(:disabled):active,
   flex-wrap: wrap;
   gap: 14px;
 }
+
+/* ---------------------------------------------------------------------------
+   Borderless tonal hierarchy and refined type scale
+--------------------------------------------------------------------------- */
+
+.project-sidebar {
+  border: 0;
+  background: var(--panel);
+}
+
+.command-bar {
+  border: 0;
+  background: var(--panel);
+}
+
+.work-card {
+  border: 0;
+}
+
+.library-card {
+  border: 0;
+  background: var(--panel);
+}
+
+.library-item {
+  border: 0;
+  background: var(--surface-2);
+}
+
+.project-sidebar-header,
+.projects-drawer > header,
+.project-dialog-header,
+.project-navigation-primary,
+.project-navigation-children,
+.library-group-heading,
+.project-dialog-context,
+.move-destination-create,
+.creator-footer {
+  border: 0;
+}
+
+.project-navigation-primary {
+  padding-bottom: 12px;
+}
+
+.project-navigation-children {
+  margin-left: 22px;
+  padding-left: 7px;
+}
+
+.search-display,
+.search-mark,
+.privacy-pill,
+.dropzone,
+.field-label input,
+.option-group,
+.filename-preview,
+.progress-panel,
+.output-panel,
+.resume-card,
+.empty-state,
+.library-search-box,
+.library-card .field-label input,
+.library-import-toggle,
+.library-toolbar button.library-import-toggle,
+.library-item:first-child,
+.thumbnail-action,
+.projects-drawer-trigger {
+  border: 0;
+}
+
+.search-display,
+.dropzone,
+.field-label input,
+.option-group,
+.filename-preview,
+.progress-panel,
+.output-panel,
+.library-search-box,
+.library-card .field-label input,
+.library-import-toggle,
+.library-toolbar button.library-import-toggle {
+  background: var(--surface-2);
+}
+
+.dropzone.has-file {
+  border: 0;
+  background: #20251d;
+  box-shadow: inset 3px 0 0 rgba(185, 220, 92, 0.72);
+}
+
+.dropzone:hover {
+  border-color: transparent;
+  background: #22262a;
+  box-shadow: none;
+}
+
+.dropzone.has-file:hover {
+  background: #22281f;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.work-row,
+.batch-item {
+  border-top: 0;
+}
+
+.work-row + .work-row {
+  margin-top: 4px;
+}
+
+.primary-button,
+.secondary-button,
+.subtle-button,
+.download-button,
+.import-button,
+.batch-actions button,
+.library-toolbar button,
+.project-dialog-actions button,
+.move-destination-list > button,
+.move-destination-project > button,
+.move-destination-create button,
+.organization-undo,
+.organization-undo button {
+  border: 0;
+}
+
+.secondary-button,
+.subtle-button,
+.batch-actions button,
+.library-toolbar button,
+.project-dialog-actions button {
+  background: var(--surface-2);
+}
+
+.field-label input:focus,
+.work-row-light .field-label input:focus,
+.library-search-box:focus-within,
+.project-dialog-form input:focus,
+.project-dialog-form select:focus {
+  border: 0;
+  box-shadow: 0 0 0 2px rgba(185, 220, 92, 0.42);
+}
+
+.work-row-light .field-label input,
+.work-row-light .progress-panel,
+.work-row-light .output-panel,
+.work-row-light .filename-preview,
+.work-row-light .current-export-button,
+.work-row-light .subtle-button,
+.work-row-light .batch-actions button {
+  border: 0;
+  background: var(--surface-2);
+  box-shadow: none;
+}
+
+.reference-filter-tabs {
+  background: #0d0f11;
+}
+
+.reference-filter-tabs button.is-active {
+  background: var(--muted-strong);
+}
+
+.library-item:hover,
+.library-item.is-playing {
+  border: 0;
+  background: #24272c;
+}
+
+.library-item.is-playing {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.project-dialog-form input:not([type="checkbox"]),
+.project-dialog-form select {
+  border: 0;
+  background: var(--surface-2);
+}
+
+.move-destination-list > button,
+.move-destination-project > button,
+.move-destination-create button {
+  border: 0;
+}
+
+.move-destination-list button:hover {
+  border-color: transparent;
+  background: var(--muted-strong);
+}
+
+.projects-drawer {
+  border-right: 0;
+  background: var(--panel);
+  box-shadow: 18px 0 48px rgba(2, 3, 4, 0.42);
+}
+
+.empty-state {
+  background: var(--surface-2);
+}
+
+.organization-undo {
+  box-shadow: 0 14px 42px rgba(2, 3, 4, 0.5);
+}
+
+.project-navigation-heading {
+  color: var(--soft-foreground);
+  font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 550;
+}
+
+.project-sidebar-header strong,
+.project-dialog-header strong,
+.projects-drawer > header strong {
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+
+.library-section-heading strong {
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.library-group-heading strong {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.library-group-heading span {
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.dropzone-kicker,
+.field-label > span,
+.option-group > span,
+.filename-preview > span,
+.progress-panel > span,
+.download-row span,
+.batch-heading span,
+.library-card .field-label span {
+  color: var(--panel-muted);
+  font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 550;
+}
+
+.section-line {
+  font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+.section-line span {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.section-line strong {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.landing-steps,
+.privacy-pill {
+  font-family: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+}
+
+.landing-steps li + li {
+  border-left: 0;
+}
+
+button,
+.download-button {
+  font-weight: 550;
+}
+
+.primary-button,
+.download-button,
+.import-button {
+  font-weight: 650;
+}
+
+.library-title-row strong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.project-dialog-form label {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tag-chip {
+  font-size: 0.625rem;
+  font-weight: 650;
+}

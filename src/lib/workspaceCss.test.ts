@@ -10,6 +10,14 @@ function cssRule(source: string, selector: string): string {
   return match?.[1] ?? "";
 }
 
+function lastCssRule(source: string, selector: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const matches = Array.from(
+    source.matchAll(new RegExp(`${escapedSelector}\\s*\\{([^}]+)\\}`, "g"))
+  );
+  return matches.at(-1)?.[1] ?? "";
+}
+
 describe("professional workspace visual contract", () => {
   it("uses a single dark graphite token system", () => {
     const root = cssRule(indexCss, ":root");
@@ -46,5 +54,26 @@ describe("professional workspace visual contract", () => {
     expect(cssRule(appCss, ".projects-drawer button")).toContain("min-height: 44px");
     expect(cssRule(appCss, ".project-dialog")).toContain("max-height: min(760px, 90dvh)");
     expect(cssRule(appCss, ".organization-undo")).toContain("position: fixed");
+  });
+
+  it("uses tonal hierarchy instead of persistent structural borders", () => {
+    expect(lastCssRule(appCss, ".project-sidebar")).toContain("border: 0");
+    expect(lastCssRule(appCss, ".command-bar")).toContain("border: 0");
+    expect(lastCssRule(appCss, ".work-card")).toContain("border: 0");
+    expect(lastCssRule(appCss, ".library-card")).toContain("border: 0");
+    expect(lastCssRule(appCss, ".library-item")).toContain("border: 0");
+  });
+
+  it("uses readable sans labels while reserving mono for metadata", () => {
+    const navigationHeading = lastCssRule(appCss, ".project-navigation-heading");
+    const sectionHeading = lastCssRule(appCss, ".library-section-heading strong");
+    const groupMetadata = lastCssRule(appCss, ".library-group-heading span");
+
+    expect(navigationHeading).toContain('font-family: "Geist Sans"');
+    expect(navigationHeading).toContain("font-size: 0.75rem");
+    expect(navigationHeading).toContain("font-weight: 550");
+    expect(sectionHeading).toContain("font-size: 1rem");
+    expect(sectionHeading).toContain("font-weight: 650");
+    expect(groupMetadata).toContain('font-family: "Geist Mono"');
   });
 });

@@ -21,7 +21,7 @@ The approved workspace layout, information hierarchy, and feature behavior remai
 The workspace should feel like a focused professional media tool:
 
 - Use a deep black application background with graphite workspace surfaces.
-- Separate regions with fine borders and dividers instead of floating cards or heavy shadows.
+- Separate regions with graphite surface tones and spacing; reserve borders for focus, media boundaries, active editing states, errors, and overlays.
 - Keep controls compact, crisp, and clearly labeled, using familiar icons where appropriate.
 - Use high-contrast primary text, muted secondary text, and one restrained FrameWave accent color for active states and primary actions.
 - Prefer calm, efficient spacing over decorative whitespace while preserving comfortable touch targets and readable text.
