@@ -11,12 +11,19 @@ import {
 } from "./libraryApi";
 import {
   createProject,
+  createFolderAndMoveReference,
+  createProjectAndMoveReference,
   createProjectFolder,
+  deleteProject,
+  deleteProjectFolder,
   fetchProjectFolders,
   fetchProjects,
   initializeProjectLibrary,
+  moveReference,
   renameProject,
-  renameProjectFolder
+  renameProjectFolder,
+  restoreProject,
+  restoreProjectFolder
 } from "./projectApi";
 
 const DB_NAME = "FrameWaveLibraryDB";
@@ -74,6 +81,139 @@ describe("project library initialization and CRUD", () => {
     });
     legacyDatabase.close();
     await fetchLibrary("");
+  });
+
+  it("moves a reference only to valid explicit destinations", async () => {
+    const first = await createProject({ name: "First" });
+    const second = await createProject({ name: "Second" });
+    const firstFolder = await createProjectFolder(first.project.id, "Finals");
+    const secondFolder = await createProjectFolder(second.project.id, "Finals");
+    await seedStore(LIBRARY_CLIP_STORE, [rawClip("clip", null, null)]);
+
+    expect(
+      await moveReference("clip", {
+        kind: "project-unfiled",
+        projectId: first.project.id
+      })
+    ).toMatchObject({ projectId: first.project.id, folderId: null });
+    expect(
+      await moveReference("clip", {
+        kind: "folder",
+        projectId: first.project.id,
+        folderId: firstFolder.id
+      })
+    ).toMatchObject({ projectId: first.project.id, folderId: firstFolder.id });
+
+    await expect(
+      moveReference("clip", {
+        kind: "folder",
+        projectId: first.project.id,
+        folderId: secondFolder.id
+      })
+    ).rejects.toThrow("does not belong");
+    expect((await fetchLibrary(""))[0]).toMatchObject({
+      projectId: first.project.id,
+      folderId: firstFolder.id
+    });
+
+    expect(await moveReference("clip", { kind: "quick" })).toMatchObject({
+      projectId: null,
+      folderId: null
+    });
+  });
+
+  it("creates a destination inline and moves the reference atomically", async () => {
+    await seedStore(LIBRARY_CLIP_STORE, [
+      rawClip("project-clip", null, null),
+      rawClip("folder-clip", null, null)
+    ]);
+
+    const projectMove = await createProjectAndMoveReference("project-clip", {
+      name: "New Film",
+      useStarterFolders: true
+    });
+    expect(projectMove.clip).toMatchObject({
+      projectId: projectMove.project.id,
+      folderId: null
+    });
+    expect(projectMove.folders).toHaveLength(5);
+
+    const folderMove = await createFolderAndMoveReference(
+      "folder-clip",
+      projectMove.project.id,
+      "Scene 02"
+    );
+    expect(folderMove.clip).toMatchObject({
+      projectId: projectMove.project.id,
+      folderId: folderMove.folder.id
+    });
+  });
+
+  it("deletes a folder safely and Undo never overwrites a later move", async () => {
+    const project = await createProject({ name: "Film" });
+    const folder = await createProjectFolder(project.project.id, "Finals");
+    await seedStore(LIBRARY_CLIP_STORE, [
+      rawClip("clip", project.project.id, folder.id)
+    ]);
+
+    const snapshot = await deleteProjectFolder(folder.id);
+    expect(await fetchProjectFolders()).toEqual([]);
+    expect((await fetchLibrary(""))[0]).toMatchObject({
+      projectId: project.project.id,
+      folderId: null
+    });
+
+    await moveReference("clip", { kind: "quick" });
+    await restoreProjectFolder(snapshot);
+
+    expect((await fetchProjectFolders())[0].name).toBe("Finals");
+    expect((await fetchLibrary(""))[0]).toMatchObject({
+      projectId: null,
+      folderId: null
+    });
+  });
+
+  it("restores a deleted project, folders, and eligible assignments", async () => {
+    const project = await createProject({ name: "Film" });
+    const folder = await createProjectFolder(project.project.id, "Finals");
+    await seedStore(LIBRARY_CLIP_STORE, [
+      rawClip("foldered", project.project.id, folder.id),
+      rawClip("unfiled", project.project.id, null)
+    ]);
+
+    const snapshot = await deleteProject(project.project.id);
+    expect(await fetchProjects()).toEqual([]);
+    expect(await fetchProjectFolders()).toEqual([]);
+    expect((await fetchLibrary("")).every((clip) => !clip.projectId)).toBe(true);
+
+    await restoreProject(snapshot);
+
+    expect((await fetchProjects())[0].name).toBe("Film");
+    expect((await fetchProjectFolders())[0].name).toBe("Finals");
+    const restored = (await fetchLibrary(""))
+      .map(({ id, projectId, folderId }) => ({ id, projectId, folderId }))
+      .sort((left, right) => left.id.localeCompare(right.id));
+    expect(restored).toEqual([
+      { id: "foldered", projectId: project.project.id, folderId: folder.id },
+      { id: "unfiled", projectId: project.project.id, folderId: null }
+    ]);
+  });
+
+  it("uses unique restored names when deletion names have been reused", async () => {
+    const project = await createProject({ name: "Film" });
+    const folder = await createProjectFolder(project.project.id, "Finals");
+    const snapshot = await deleteProject(project.project.id);
+    await createProject({ name: "Film" });
+    await createProject({ name: "Film restored" });
+
+    await restoreProject(snapshot);
+
+    expect((await fetchProjects()).map(({ name }) => name)).toContain(
+      "Film restored 2"
+    );
+    expect((await fetchProjectFolders()).find(({ id }) => id === folder.id)?.name).toBe(
+      "Finals"
+    );
   });
 
   afterEach(async () => {
