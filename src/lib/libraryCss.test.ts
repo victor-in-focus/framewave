@@ -64,7 +64,7 @@ describe("library card CSS", () => {
     expect(cssRule(".library-search > span")).toContain("clip-path: inset(50%)");
     expect(cssRule(".library-import-toggle")).toContain("opacity: 1");
     expect(cssRule(".library-toolbar button.library-import-toggle")).toContain(
-      "background: rgba(249, 248, 243, 0.7)"
+      "background: rgba(228, 230, 245, 0.7)"
     );
     expect(css).not.toContain(".library-actions-secondary");
   });

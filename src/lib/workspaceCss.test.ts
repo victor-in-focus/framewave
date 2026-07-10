@@ -19,13 +19,16 @@ function lastCssRule(source: string, selector: string): string {
 }
 
 describe("professional workspace visual contract", () => {
-  it("uses a single dark graphite token system", () => {
+  it("uses the aurora token system: violet accent on deep indigo surfaces", () => {
     const root = cssRule(indexCss, ":root");
 
-    expect(root).toContain("--background: #0b0c0e");
-    expect(root).toContain("--surface-1: #15171a");
-    expect(root).toContain("--surface-2: #1d2024");
-    expect(root).toContain("--accent: #b9dc5c");
+    expect(root).toContain("--background: #08090f");
+    expect(root).toContain("--surface-1: #0f1018");
+    expect(root).toContain("--surface-2: #161726");
+    expect(root).toContain("--accent: #8b7cf7");
+    expect(root).toContain("--accent-soft: rgba(139, 124, 247, 0.16)");
+    expect(root).toContain("--gold: #f2c94c");
+    expect(root).toContain("--status-good: #35d67f");
   });
 
   it("reserves stable expanded and collapsed sidebar columns", () => {
@@ -37,9 +40,12 @@ describe("professional workspace visual contract", () => {
     );
   });
 
-  it("uses joined workspace surfaces instead of floating card shadows", () => {
-    expect(cssRule(appCss, ".work-card")).toContain("border-radius: 8px");
-    expect(cssRule(appCss, ".library-card")).toContain("box-shadow: none");
+  it("uses soft glass workspace surfaces with a shared radius", () => {
+    expect(cssRule(appCss, ".work-card")).toContain("border-radius: 20px");
+    expect(cssRule(appCss, ".work-card")).toContain("backdrop-filter: blur(18px)");
+    expect(lastCssRule(appCss, ".library-card")).toContain(
+      "background: rgba(15, 16, 24, 0.6)"
+    );
     expect(cssRule(appCss, ".library-item")).toContain("border-radius: 6px");
   });
 

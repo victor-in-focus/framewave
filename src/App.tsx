@@ -212,12 +212,12 @@ function WaveformCanvas({
     context.clearRect(0, 0, width, height);
 
     if (withScrim) {
-      context.fillStyle = "rgba(2, 4, 3, 0.45)";
+      context.fillStyle = "rgba(4, 5, 12, 0.5)";
       context.fillRect(0, 0, width, height);
     }
 
     const middle = height / 2;
-    context.fillStyle = "rgba(243, 249, 210, 0.72)";
+    context.fillStyle = "rgba(196, 188, 255, 0.78)";
     for (let x = 0; x < width; x += 1) {
       const magnitude = Math.max(1.2, peaks[x] * (middle - 6));
       context.fillRect(x, middle - magnitude, 1, magnitude * 2);
