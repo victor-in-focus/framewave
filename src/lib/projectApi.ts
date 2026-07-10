@@ -185,7 +185,8 @@ export async function createProject(input: {
         stores[PROJECT_STORE_NAME].getAll() as IDBRequest<Project[]>
       );
       const name = validationValue(validateProjectName(input.name, existing));
-      const now = new Date().toISOString();
+      const createdTime = Date.now();
+      const now = new Date(createdTime).toISOString();
       const project: Project = {
         id: createId(),
         name,
@@ -193,13 +194,16 @@ export async function createProject(input: {
         updatedAt: now
       };
       const folders: ProjectFolder[] = input.useStarterFolders
-        ? STARTER_FOLDER_NAMES.map((folderName) => ({
-            id: createId(),
-            projectId: project.id,
-            name: folderName,
-            createdAt: now,
-            updatedAt: now
-          }))
+        ? STARTER_FOLDER_NAMES.map((folderName, index) => {
+            const folderTime = new Date(createdTime + index + 1).toISOString();
+            return {
+              id: createId(),
+              projectId: project.id,
+              name: folderName,
+              createdAt: folderTime,
+              updatedAt: folderTime
+            };
+          })
         : [];
 
       await databaseRequest(stores[PROJECT_STORE_NAME].put(project));
@@ -382,7 +386,8 @@ export async function createProjectAndMoveReference(
       if (!clip) {
         throw new Error("Library clip was not found.");
       }
-      const now = new Date().toISOString();
+      const createdTime = Date.now();
+      const now = new Date(createdTime).toISOString();
       const project: Project = {
         id: createId(),
         name: validationValue(validateProjectName(input.name, projects)),
@@ -390,13 +395,16 @@ export async function createProjectAndMoveReference(
         updatedAt: now
       };
       const folders: ProjectFolder[] = input.useStarterFolders
-        ? STARTER_FOLDER_NAMES.map((name) => ({
-            id: createId(),
-            projectId: project.id,
-            name,
-            createdAt: now,
-            updatedAt: now
-          }))
+        ? STARTER_FOLDER_NAMES.map((name, index) => {
+            const folderTime = new Date(createdTime + index + 1).toISOString();
+            return {
+              id: createId(),
+              projectId: project.id,
+              name,
+              createdAt: folderTime,
+              updatedAt: folderTime
+            };
+          })
         : [];
 
       await databaseRequest(stores[PROJECT_STORE_NAME].put(project));

@@ -295,6 +295,11 @@ describe("project library initialization and CRUD", () => {
       "Pickups",
       "Finals"
     ]);
+    expect(
+      (await fetchProjectFolders())
+        .filter(({ projectId }) => projectId === templated.project.id)
+        .map(({ name }) => name)
+    ).toEqual(["Character A", "Character B", "Scene 01", "Pickups", "Finals"]);
   });
 
   it("creates and renames projects and folders with scoped validation", async () => {
