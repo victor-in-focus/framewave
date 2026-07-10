@@ -23,9 +23,9 @@ describe("library card CSS", () => {
     );
     expect(cssRule(".library-list")).toContain("gap: 6px");
     expect(cssRule(".library-item")).toContain(
-      "border: 1px solid rgba(10, 22, 17, 0.06)"
+      "border: 1px solid var(--border)"
     );
-    expect(cssRule(".library-item")).toContain("border-radius: 12px");
+    expect(cssRule(".library-item")).toContain("border-radius: 6px");
     expect(cssRule(".library-item")).not.toContain("border-top: 1px solid");
     expect(cssRule(".library-title-row")).toContain(
       "grid-template-columns: minmax(0, 1fr) auto"

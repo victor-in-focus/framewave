@@ -130,7 +130,7 @@ const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp,image/gif,.jpg,.jp
 const NAMING_CONTEXT_KEY = "namingContext";
 const PROJECT_SIDEBAR_KEY = "projectSidebarCollapsed";
 
-// Creator links — update the handle/repo when they change.
+// Creator links - update the handle/repo when they change.
 const CREATOR_X_URL = "https://x.com/VictorInFocus";
 const PROJECT_REPO_URL = "https://github.com/victor-in-focus/framewave";
 const FEEDBACK_MAILTO =
@@ -1433,7 +1433,9 @@ export default function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main
+      className={`app-shell${sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}
+    >
       <ProjectSidebar
         projects={projects}
         folders={projectFolders}
@@ -2423,7 +2425,7 @@ export default function App() {
           <a href={CREATOR_X_URL} target="_blank" rel="noreferrer">
             VictorInFocus
           </a>{" "}
-          — AI video tools &amp; cinematic AI film.
+          - AI video tools &amp; cinematic AI film.
         </span>
         <span className="creator-footer-links">
           <a href={CREATOR_X_URL} target="_blank" rel="noreferrer">
