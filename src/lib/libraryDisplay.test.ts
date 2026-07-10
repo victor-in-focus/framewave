@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  filterLibraryClips,
   getLibraryInitials,
   getLibraryDisplayTitle,
   isRecentLibraryClip,
@@ -104,4 +105,21 @@ describe("sortLibraryClips", () => {
       );
     }
   );
+});
+
+describe("filterLibraryClips", () => {
+  const clips = [
+    clip({ id: "ava", title: "Ava calm", favorite: true, tags: ["hero"] }),
+    clip({ id: "ben", title: "Ben pickup", favorite: false, tags: ["pickup"] })
+  ];
+
+  it("composes search and favorites without mutating input", () => {
+    expect(filterLibraryClips(clips, "hero", false).map(({ id }) => id)).toEqual([
+      "ava"
+    ]);
+    expect(filterLibraryClips(clips, "", true).map(({ id }) => id)).toEqual([
+      "ava"
+    ]);
+    expect(clips.map(({ id }) => id)).toEqual(["ava", "ben"]);
+  });
 });

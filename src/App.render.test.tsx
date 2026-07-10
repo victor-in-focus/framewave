@@ -37,6 +37,15 @@ describe("App first render (no source loaded)", () => {
     expect(html).toContain("References");
   });
 
+  it("keeps project organization secondary to the immediate workspace", () => {
+    const html = renderToString(<App />);
+
+    expect(html).toContain("Projects");
+    expect(html).toContain("All references");
+    expect(html).toContain("Quick exports");
+    expect(html).toContain("Create Reference");
+  });
+
   it("keeps reference controls minimal on first render", () => {
     const html = renderToString(<App />);
 

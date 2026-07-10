@@ -12,6 +12,7 @@ import {
 } from "react";
 import {
   Download,
+  FolderInput,
   ImagePlus,
   Pause,
   Play,
@@ -23,6 +24,13 @@ import {
   X
 } from "lucide-react";
 import "./App.css";
+import {
+  ConfirmOrganizationDeleteDialog,
+  FolderEditorDialog,
+  MoveReferenceDialog,
+  ProjectEditorDialog
+} from "./components/ProjectDialogs";
+import { ProjectSidebar } from "./components/ProjectSidebar";
 import { trackEvent } from "./lib/analytics";
 import { createBlankVoiceReference } from "./lib/processing";
 import {
@@ -36,11 +44,38 @@ import { getSetting, setSetting } from "./lib/settings";
 import {
   getLibraryInitials,
   getLibraryDisplayTitle,
+  filterLibraryClips,
   groupLibraryClips,
   sortLibraryClips,
   truncateMiddle,
   type LibrarySortMode
 } from "./lib/libraryDisplay";
+import {
+  createFolderAndMoveReference,
+  createProject,
+  createProjectAndMoveReference,
+  createProjectFolder,
+  deleteProject,
+  deleteProjectFolder,
+  fetchProjectFolders,
+  fetchProjects,
+  initializeProjectLibrary,
+  moveReference,
+  renameProject,
+  renameProjectFolder,
+  restoreProject,
+  restoreProjectFolder,
+  type FolderUndoSnapshot,
+  type ProjectUndoSnapshot
+} from "./lib/projectApi";
+import {
+  filterClipsByLocation,
+  getLocationLabel,
+  getProjectCounts,
+  type LibraryLocation,
+  type Project,
+  type ProjectFolder
+} from "./lib/projectLibrary";
 import {
   BatchClipDraft,
   LibraryClip,
@@ -75,12 +110,25 @@ import { computeWaveformPeaks } from "./lib/waveform";
 
 type ExportState = "idle" | "processing" | "complete" | "error";
 type TrimDragMode = "start" | "end" | "window";
+type ProjectDialogState =
+  | { mode: "create" }
+  | { mode: "rename"; project: Project };
+type FolderDialogState =
+  | { mode: "create"; projectId: string }
+  | { mode: "rename"; folder: ProjectFolder };
+type DeleteOrganizationTarget =
+  | { kind: "project"; project: Project }
+  | { kind: "folder"; folder: ProjectFolder };
+type OrganizationUndo =
+  | { kind: "project"; label: string; snapshot: ProjectUndoSnapshot }
+  | { kind: "folder"; label: string; snapshot: FolderUndoSnapshot };
 
 const ACCEPTED_REFERENCE_TYPES = "video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm";
 const ACCEPTED_SOURCE_TYPES =
   "video/mp4,video/quicktime,video/webm,audio/aac,audio/flac,audio/m4a,audio/mp4,audio/mpeg,audio/ogg,audio/wav,audio/wave,audio/x-m4a,audio/x-wav,.mp4,.mov,.webm,.aac,.flac,.m4a,.mp3,.ogg,.wav";
 const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif";
 const NAMING_CONTEXT_KEY = "namingContext";
+const PROJECT_SIDEBAR_KEY = "projectSidebarCollapsed";
 
 // Creator links — update the handle/repo when they change.
 const CREATOR_X_URL = "https://x.com/VictorInFocus";
@@ -188,10 +236,27 @@ function formatPlayerTime(seconds: number): string {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
+function libraryEmptyCopy(location: LibraryLocation): string {
+  if (location.kind === "quick") {
+    return "New references save here first.";
+  }
+  if (location.kind === "project-unfiled") {
+    return "No unfiled references in this project.";
+  }
+  if (location.kind === "folder") {
+    return "No references in this folder yet.";
+  }
+  if (location.kind === "project-all") {
+    return "Move references here from Quick exports.";
+  }
+  return "Export a reference and it will appear here.";
+}
+
 export default function App() {
   const sourceMediaRef = useRef<HTMLMediaElement | null>(null);
   const trimRailRef = useRef<HTMLDivElement | null>(null);
   const playbackTimerRef = useRef<number | null>(null);
+  const undoTimerRef = useRef<number | null>(null);
   const trimDragRef = useRef<{
     mode: TrimDragMode;
     offsetSeconds: number;
@@ -241,6 +306,25 @@ export default function App() {
     Record<string, number>
   >({});
   const [resumeSession, setResumeSession] = useState<WorkSession | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectFolders, setProjectFolders] = useState<ProjectFolder[]>([]);
+  const [libraryLocation, setLibraryLocation] = useState<LibraryLocation>({
+    kind: "quick"
+  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    getSetting(PROJECT_SIDEBAR_KEY, false)
+  );
+  const [organizationError, setOrganizationError] = useState<string | null>(null);
+  const [projectDialog, setProjectDialog] = useState<ProjectDialogState | null>(
+    null
+  );
+  const [folderDialog, setFolderDialog] = useState<FolderDialogState | null>(null);
+  const [moveClipId, setMoveClipId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] =
+    useState<DeleteOrganizationTarget | null>(null);
+  const [organizationUndo, setOrganizationUndo] =
+    useState<OrganizationUndo | null>(null);
+  const [lastExportClipId, setLastExportClipId] = useState<string | null>(null);
 
   const rangeValidation = useMemo(
     () => getRangeValidation(startTime, endTime, mediaDuration),
@@ -317,10 +401,33 @@ export default function App() {
 
     return `Batch ${batchJob.status}, ${Math.round(batchJob.progress * 100)}%`;
   }, [batchJob]);
-  const visibleLibraryClips = useMemo(
-    () => sortLibraryClips(libraryClips, librarySortMode),
-    [libraryClips, librarySortMode]
+  const locationLibraryClips = useMemo(
+    () => filterClipsByLocation(libraryClips, libraryLocation),
+    [libraryClips, libraryLocation]
   );
+  const visibleLibraryClips = useMemo(
+    () =>
+      sortLibraryClips(
+        filterLibraryClips(
+          locationLibraryClips,
+          libraryQuery,
+          librarySortMode === "favorites"
+        ),
+        librarySortMode
+      ),
+    [libraryQuery, librarySortMode, locationLibraryClips]
+  );
+  const projectCounts = useMemo(
+    () => getProjectCounts(libraryClips, projects, projectFolders),
+    [libraryClips, projectFolders, projects]
+  );
+  const libraryLocationLabel = useMemo(
+    () => getLocationLabel(libraryLocation, projects, projectFolders),
+    [libraryLocation, projectFolders, projects]
+  );
+  const movingClip = moveClipId
+    ? libraryClips.find((clip) => clip.id === moveClipId) ?? null
+    : null;
   const referenceCountLabel = `${libraryClips.length} saved reference${
     libraryClips.length === 1 ? "" : "s"
   }`;
@@ -490,17 +597,65 @@ export default function App() {
   }, [characterName, descriptor, tagInput]);
 
   useEffect(() => {
-    void loadLibrary();
-  }, [libraryQuery, librarySortMode]);
+    void initializeWorkspaceLibrary();
+    return () => {
+      if (undoTimerRef.current) {
+        window.clearTimeout(undoTimerRef.current);
+      }
+    };
+  }, []);
+
+  async function initializeWorkspaceLibrary() {
+    setLibraryLoading(true);
+    setLibraryError(null);
+    setOrganizationError(null);
+    try {
+      await initializeProjectLibrary();
+    } catch (caughtError) {
+      setOrganizationError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Could not prepare project organization."
+      );
+    }
+    try {
+      await refreshWorkspaceLibrary();
+    } catch (caughtError) {
+      setLibraryError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Could not load the library."
+      );
+    } finally {
+      setLibraryLoading(false);
+    }
+  }
+
+  async function refreshWorkspaceLibrary() {
+    const [clips, nextProjects, nextFolders] = await Promise.all([
+      fetchLibrary(""),
+      fetchProjects(),
+      fetchProjectFolders()
+    ]);
+    setLibraryClips(clips);
+    setProjects(nextProjects);
+    setProjectFolders(nextFolders);
+    setLibraryTagDrafts((drafts) => {
+      const nextDrafts = { ...drafts };
+      for (const clip of clips) {
+        if (!(clip.id in nextDrafts)) {
+          nextDrafts[clip.id] = clip.tags.join(", ");
+        }
+      }
+      return nextDrafts;
+    });
+  }
 
   async function loadLibrary() {
     setLibraryLoading(true);
     setLibraryError(null);
     try {
-      const clips = await fetchLibrary(
-        libraryQuery,
-        librarySortMode === "favorites"
-      );
+      const clips = await fetchLibrary("");
       setLibraryClips(clips);
       setLibraryTagDrafts((drafts) => {
         const nextDrafts = { ...drafts };
@@ -548,6 +703,7 @@ export default function App() {
     setExportStatus("");
     setExportProgress(0);
     setOutputName("");
+    setLastExportClipId(null);
     if (outputUrl) {
       URL.revokeObjectURL(outputUrl);
       setOutputUrl(null);
@@ -835,7 +991,7 @@ export default function App() {
         sourceKind === "video" && sourceUrl
           ? await captureSourceFrame(sourceUrl, startTime)
           : null;
-      await saveLibraryClip({
+      const savedClip = await saveLibraryClip({
         blob,
         filename: outputFilename,
         sourceName: sourceFile.name,
@@ -847,6 +1003,7 @@ export default function App() {
         endTime,
         duration: selectedDuration
       });
+      setLastExportClipId(savedClip.id);
       setExportState("complete");
       setExportStatus("Reference video ready.");
       setExportProgress(1);
@@ -1090,8 +1247,218 @@ export default function App() {
     }));
   }
 
+  function showOrganizationError(caughtError: unknown, fallback: string) {
+    setOrganizationError(
+      caughtError instanceof Error ? caughtError.message : fallback
+    );
+  }
+
+  function showUndo(undo: OrganizationUndo) {
+    if (undoTimerRef.current) {
+      window.clearTimeout(undoTimerRef.current);
+    }
+    setOrganizationUndo(undo);
+    undoTimerRef.current = window.setTimeout(() => {
+      setOrganizationUndo(null);
+      undoTimerRef.current = null;
+    }, 5000);
+  }
+
+  async function submitProjectDialog(input: {
+    name: string;
+    useStarterFolders: boolean;
+  }) {
+    if (!projectDialog) {
+      return;
+    }
+    setOrganizationError(null);
+    try {
+      if (projectDialog.mode === "create") {
+        const result = await createProject(input);
+        setLibraryLocation({ kind: "project-all", projectId: result.project.id });
+      } else {
+        await renameProject(projectDialog.project.id, input.name);
+      }
+      await refreshWorkspaceLibrary();
+      setProjectDialog(null);
+    } catch (caughtError) {
+      showOrganizationError(caughtError, "Could not save that project.");
+    }
+  }
+
+  async function submitFolderDialog(name: string) {
+    if (!folderDialog) {
+      return;
+    }
+    setOrganizationError(null);
+    try {
+      if (folderDialog.mode === "create") {
+        const folder = await createProjectFolder(folderDialog.projectId, name);
+        setLibraryLocation({
+          kind: "folder",
+          projectId: folder.projectId,
+          folderId: folder.id
+        });
+      } else {
+        await renameProjectFolder(folderDialog.folder.id, name);
+      }
+      await refreshWorkspaceLibrary();
+      setFolderDialog(null);
+    } catch (caughtError) {
+      showOrganizationError(caughtError, "Could not save that folder.");
+    }
+  }
+
+  async function submitMove(destination: Parameters<typeof moveReference>[1]) {
+    if (!moveClipId) {
+      return;
+    }
+    setOrganizationError(null);
+    try {
+      await moveReference(moveClipId, destination);
+      await refreshWorkspaceLibrary();
+      setMoveClipId(null);
+    } catch (caughtError) {
+      showOrganizationError(caughtError, "Could not move that reference.");
+    }
+  }
+
+  async function submitInlineProject(input: {
+    name: string;
+    useStarterFolders: boolean;
+  }) {
+    if (!moveClipId) {
+      return;
+    }
+    setOrganizationError(null);
+    try {
+      const result = await createProjectAndMoveReference(moveClipId, input);
+      await refreshWorkspaceLibrary();
+      setLibraryLocation({
+        kind: "project-unfiled",
+        projectId: result.project.id
+      });
+      setMoveClipId(null);
+    } catch (caughtError) {
+      showOrganizationError(caughtError, "Could not create that project.");
+    }
+  }
+
+  async function submitInlineFolder(projectId: string, name: string) {
+    if (!moveClipId) {
+      return;
+    }
+    setOrganizationError(null);
+    try {
+      const result = await createFolderAndMoveReference(
+        moveClipId,
+        projectId,
+        name
+      );
+      await refreshWorkspaceLibrary();
+      setLibraryLocation({
+        kind: "folder",
+        projectId,
+        folderId: result.folder.id
+      });
+      setMoveClipId(null);
+    } catch (caughtError) {
+      showOrganizationError(caughtError, "Could not create that folder.");
+    }
+  }
+
+  async function confirmOrganizationDelete() {
+    if (!deleteTarget) {
+      return;
+    }
+    setOrganizationError(null);
+    try {
+      if (deleteTarget.kind === "project") {
+        const snapshot = await deleteProject(deleteTarget.project.id);
+        showUndo({
+          kind: "project",
+          label: `${deleteTarget.project.name} deleted`,
+          snapshot
+        });
+        if (
+          "projectId" in libraryLocation &&
+          libraryLocation.projectId === deleteTarget.project.id
+        ) {
+          setLibraryLocation({ kind: "quick" });
+        }
+      } else {
+        const snapshot = await deleteProjectFolder(deleteTarget.folder.id);
+        showUndo({
+          kind: "folder",
+          label: `${deleteTarget.folder.name} deleted`,
+          snapshot
+        });
+        if (
+          libraryLocation.kind === "folder" &&
+          libraryLocation.folderId === deleteTarget.folder.id
+        ) {
+          setLibraryLocation({
+            kind: "project-unfiled",
+            projectId: deleteTarget.folder.projectId
+          });
+        }
+      }
+      await refreshWorkspaceLibrary();
+      setDeleteTarget(null);
+    } catch (caughtError) {
+      showOrganizationError(caughtError, "Could not update organization.");
+    }
+  }
+
+  async function undoOrganizationDelete() {
+    if (!organizationUndo) {
+      return;
+    }
+    setOrganizationError(null);
+    try {
+      if (organizationUndo.kind === "project") {
+        await restoreProject(organizationUndo.snapshot);
+      } else {
+        await restoreProjectFolder(organizationUndo.snapshot);
+      }
+      await refreshWorkspaceLibrary();
+      setOrganizationUndo(null);
+      if (undoTimerRef.current) {
+        window.clearTimeout(undoTimerRef.current);
+        undoTimerRef.current = null;
+      }
+    } catch (caughtError) {
+      showOrganizationError(caughtError, "Could not restore that item.");
+    }
+  }
+
   return (
     <main className="app-shell">
+      <ProjectSidebar
+        projects={projects}
+        folders={projectFolders}
+        counts={projectCounts}
+        location={libraryLocation}
+        collapsed={sidebarCollapsed}
+        onCollapsedChange={setSidebarCollapsed}
+        onLocationChange={setLibraryLocation}
+        onCreateProject={() => setProjectDialog({ mode: "create" })}
+        onCreateFolder={(projectId) =>
+          setFolderDialog({ mode: "create", projectId })
+        }
+        onRenameProject={(project) =>
+          setProjectDialog({ mode: "rename", project })
+        }
+        onDeleteProject={(project) =>
+          setDeleteTarget({ kind: "project", project })
+        }
+        onRenameFolder={(folder) =>
+          setFolderDialog({ mode: "rename", folder })
+        }
+        onDeleteFolder={(folder) =>
+          setDeleteTarget({ kind: "folder", folder })
+        }
+      />
       <section className="workspace">
         <header className="command-bar" aria-label="FrameWave workspace">
           <div className="search-display">
@@ -1492,7 +1859,18 @@ export default function App() {
                         Download MP4
                       </a>
                     </div>
-                    <p className="prompt-helper">Saved to the local library.</p>
+                    <div className="post-export-organize">
+                      <p className="prompt-helper">Saved to Quick exports.</p>
+                      {lastExportClipId ? (
+                        <button
+                          className="subtle-button"
+                          type="button"
+                          onClick={() => setMoveClipId(lastExportClipId)}
+                        >
+                          Organize
+                        </button>
+                      ) : null}
+                    </div>
                   </section>
                 ) : null}
               </div>
@@ -1631,7 +2009,8 @@ export default function App() {
         <section className="library-card" aria-label="References">
             <div className="library-section-heading">
               <div>
-                <strong>References</strong>
+                <strong>{libraryLocationLabel}</strong>
+                <span>{visibleLibraryClips.length} shown</span>
               </div>
             </div>
             <div className="library-toolbar">
@@ -1709,6 +2088,14 @@ export default function App() {
             ) : null}
 
             {libraryError ? <p className="message error">{libraryError}</p> : null}
+            {organizationError ? (
+              <div className="organization-error" role="alert">
+                <span>{organizationError}</span>
+                <button type="button" onClick={initializeWorkspaceLibrary}>
+                  Retry
+                </button>
+              </div>
+            ) : null}
             {thumbnailError ? (
               <p className="message error">{thumbnailError}</p>
             ) : null}
@@ -1844,6 +2231,19 @@ export default function App() {
                         <button
                           className="library-icon-action"
                           type="button"
+                          title="Move reference"
+                          onClick={() => setMoveClipId(clip.id)}
+                          aria-label={`Move reference: ${displayTitle}`}
+                        >
+                          <FolderInput
+                            size={15}
+                            strokeWidth={2}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        <button
+                          className="library-icon-action"
+                          type="button"
                           onClick={() => removeLibraryClip(clip)}
                           aria-label={`Delete ${displayTitle}`}
                         >
@@ -1955,14 +2355,68 @@ export default function App() {
             {!libraryLoading && visibleLibraryClips.length === 0 ? (
               <p className="empty-state">
                 <strong>No references yet</strong>
-                <span>
-                  Export a clip and it lands here, saved in this browser and
-                  ready to reuse.
-                </span>
+                <span>{libraryEmptyCopy(libraryLocation)}</span>
               </p>
             ) : null}
         </section>
       </section>
+
+      <ProjectEditorDialog
+        open={Boolean(projectDialog)}
+        title={projectDialog?.mode === "rename" ? "Rename project" : "New project"}
+        projects={projects}
+        initialName={
+          projectDialog?.mode === "rename" ? projectDialog.project.name : ""
+        }
+        onClose={() => setProjectDialog(null)}
+        onSubmit={(input) => void submitProjectDialog(input)}
+      />
+      <FolderEditorDialog
+        open={Boolean(folderDialog)}
+        title={folderDialog?.mode === "rename" ? "Rename folder" : "New folder"}
+        projectId={
+          folderDialog?.mode === "rename"
+            ? folderDialog.folder.projectId
+            : folderDialog?.projectId ?? ""
+        }
+        folders={projectFolders}
+        initialName={
+          folderDialog?.mode === "rename" ? folderDialog.folder.name : ""
+        }
+        onClose={() => setFolderDialog(null)}
+        onSubmit={(name) => void submitFolderDialog(name)}
+      />
+      <MoveReferenceDialog
+        open={Boolean(movingClip)}
+        clipTitle={movingClip ? getLibraryDisplayTitle(movingClip) : "Reference"}
+        projects={projects}
+        folders={projectFolders}
+        onClose={() => setMoveClipId(null)}
+        onMove={(destination) => void submitMove(destination)}
+        onCreateProject={(input) => void submitInlineProject(input)}
+        onCreateFolder={(projectId, name) =>
+          void submitInlineFolder(projectId, name)
+        }
+      />
+      <ConfirmOrganizationDeleteDialog
+        open={Boolean(deleteTarget)}
+        kind={deleteTarget?.kind ?? "project"}
+        name={
+          deleteTarget?.kind === "project"
+            ? deleteTarget.project.name
+            : deleteTarget?.folder.name ?? ""
+        }
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmOrganizationDelete()}
+      />
+      {organizationUndo ? (
+        <div className="organization-undo" role="status">
+          <span>{organizationUndo.label}</span>
+          <button type="button" onClick={() => void undoOrganizationDelete()}>
+            Undo
+          </button>
+        </div>
+      ) : null}
       <footer className="creator-footer">
         <span>
           Built by{" "}

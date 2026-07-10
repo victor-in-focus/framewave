@@ -45,6 +45,8 @@ describe("library row markup", () => {
     expect(rowSource).toContain("<Star");
     expect(rowSource).toContain("<Download");
     expect(rowSource).toContain("<Tags");
+    expect(rowSource).toContain("<FolderInput");
+    expect(rowSource).toContain('aria-label={`Move reference: ${displayTitle}`}');
     expect(rowSource).toContain("<Trash2");
   });
 });

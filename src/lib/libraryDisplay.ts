@@ -63,6 +63,26 @@ export interface LibraryGroup {
   clips: LibraryClip[];
 }
 
+export function filterLibraryClips(
+  clips: LibraryClip[],
+  query: string,
+  favoritesOnly = false
+): LibraryClip[] {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  return clips.filter((clip) => {
+    if (favoritesOnly && !clip.favorite) {
+      return false;
+    }
+    if (!normalizedQuery) {
+      return true;
+    }
+    return [clip.title, clip.filename, clip.descriptor, ...clip.tags]
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(normalizedQuery);
+  });
+}
+
 function characterKeyFor(clip: LibraryClip): string {
   return clip.tags[0] ?? "";
 }
