@@ -1487,7 +1487,7 @@ export default function App() {
                 {!sourceFile ? (
                   <div className="landing">
                     <h1 className="landing-headline">
-                      Turn any voice clip into an MP4 reference
+                      Turn any voice clip into a video reference
                     </h1>
                     <p className="landing-copy">
                       Upload audio or video, select the voice you want, then
