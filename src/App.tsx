@@ -1487,11 +1487,12 @@ export default function App() {
                 {!sourceFile ? (
                   <div className="landing">
                     <h1 className="landing-headline">
-                      Voice references, stripped to signal.
+                      Turn any voice clip into an MP4 reference
                     </h1>
                     <p className="landing-copy">
-                      Trim a voice from any clip, export a blank MP4 reference
-                      for AI video tools. Nothing leaves your browser.
+                      Upload audio or video, select the voice you want, then
+                      export a black-screen MP4 for your AI video tool.
+                      Everything is processed in your browser.
                     </p>
                   </div>
                 ) : null}

@@ -6,7 +6,10 @@ describe("App first render (no source loaded)", () => {
   it("presents the landing story instead of dead tool chrome", () => {
     const html = renderToString(<App />);
 
-    expect(html).toContain("Voice references, stripped to signal.");
+    expect(html).toContain("Turn any voice clip into an MP4 reference");
+    expect(html).toContain(
+      "Upload audio or video, select the voice you want, then export a black-screen MP4 for your AI video tool. Everything is processed in your browser.",
+    );
     expect(html).toContain("Processed locally");
     expect(html).toContain("Drop in a clip");
     expect(html).toContain("Export a blank MP4");
